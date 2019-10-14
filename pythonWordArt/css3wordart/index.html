@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS3 WordArt</title>
+    <link href="css/style.css" rel="stylesheet" type="text/css" />
+    <script src="js/object-observe-lite.js"></script>
+    <script src="js/wordart.js"></script>
+</head>
+<body>
+    <section class="background">
+        <template id="bgWordart">
+            <div class="wordart">
+                <span class="text" data-text="WordArt">WordArt</span>
+            </div>
+        </template>
+    </section>
+
+    <section class="alert welcome">
+        <h3 class="title">Welcome</h3>
+        <p><span class="icon wordart-icon"><span class="inner">A</span></span>Would you like to make some WordArt?</p>
+        <div class="button-box right">
+            <button class="ok">Yes</button>
+            <button class="ok">Hell yes</button>
+        </div>
+    </section>
+
+    <section class="dialog gallery">
+        <h3 class="title">WordArt Gallery</h3>
+        <p>Select a <span class="hk">W</span>ordArt Style:</p>
+        <ul class="gallery-thumbs" id="galleryThumbs"></ul>
+        <div class="button-box right">
+            <button class="ok">OK</button>
+            <button class="cancel">Cancel</button>
+        </div>
+
+        <template id="galleryTemplate">
+            <li>
+                <div class="wrapper">
+                    <div class="wordart">
+                        <span class="text" data-text="WordArt">WordArt</span>
+                    </div>
+                </div>
+            </li>
+        </template>
+
+        <template id="galleryStackedTemplate">
+            <li class="stack">
+                <div class="wordart">
+                    <span class="text" data-text="WordArt">WordArt</span>
+                </div>
+                <div class="highlight">
+                    <div class="wordart">
+                        <span class="text" data-text="W">W</span>
+                    </div>
+                </div>
+            </li>
+        </template>
+    </section>
+
+    <section class="dialog editor">
+        <h3 class="title">Edit WordArt Text</h3>
+        <!--<div class="form-element font">
+            <label><span class="hk">F</span>ont</label>
+            <select class="font-menu"></select>
+        </div>
+        <div class="form-element size">
+            <label><span class="hk">S</span>ize</label>
+        </div>
+        <div class="form-element text-style">
+            <button class="bevel bold">B</button>
+            <button class="bevel italic">I</button>
+        </div>-->
+        <div class="form-element text-box">
+            <label><span class="hk">S</span>ize</label>
+            <span class="inset">
+                <textarea>Your Text Here</textarea>
+            </span>
+        </div>
+        <div class="button-box right">
+            <button class="ok">OK</button>
+            <button class="cancel">Cancel</button>
+        </div>
+    </section>
+
+    <section class="dialog stage">
+        <h3 class="title">WordArt</h3>
+        <div class="container">
+            <div class="button-row">
+                <button class="create"><span class="icon wordart-icon"><span class="inner">A</span></span></button>
+            </div>
+            <div class="window">
+                <div class="stage"></div>
+            </div>
+        </div>
+        <template id="finalWordart">
+            <div class="resizable active">
+                <div class="wrapper">
+                    <div class="wordart">
+                        <span class="text" data-text=""></span>
+                    </div>
+                </div>
+                <span class="h n w"></span>
+                <span class="h n xc"></span>
+                <span class="h n e"></span>
+                <span class="h e yc"></span>
+                <span class="h e s"></span>
+                <span class="h s xc"></span>
+                <span class="h s w"></span>
+                <span class="h w yc"></span>
+            </div>
+        </template>
+    </section>
+</body>
+</html>
