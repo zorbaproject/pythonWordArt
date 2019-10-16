@@ -24,3 +24,4 @@ setup(
     'Programming Language :: Python :: 3.7',
   ],
 )
+# python3 setup.py sdist
