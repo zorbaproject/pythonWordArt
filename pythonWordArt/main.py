@@ -33,8 +33,8 @@ class pyWordArt:
         self.render3D = False
         self.transparentBackground = False
         
-        self.canvasWidth = 3508
-        self.canvasHeight = 2480
+        self.canvasWidth = 1754 #3508
+        self.canvasHeight = 1240 #2480
         
         arglist = [sys.argv[0], "--disable-web-security"]
         self.app = QApplication(arglist)
@@ -55,12 +55,8 @@ class pyWordArt:
 
     def __printpdf(self):
         if self.render3D:
-            #myi = QtGui.QImage()
-            #myp = QtGui.QPainter(myi)
-            #self.view.render(myp, QtCore.QPoint(0,0))
             pixmap = self.view.grab()
             self.imgName = self.pdfName.replace(".pdf",".png")
-            #pixmap.save(self.imgName)
             image = self.cropImage(pixmap.toImage(), self.transparentBackground)
             image.save(self.imgName)
             while not os.path.isfile(self.imgName):
@@ -69,9 +65,7 @@ class pyWordArt:
             self.app.exit()
         else:
             self.page.pdfPrintingFinished.connect(self.__doneprinting)
-            self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(QtGui.QPageSize.A4), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
-            # TODO: check why QWebEnginePage contentSize is not correct
-            #self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(self.page.contentsSize().toSize(),QtGui.QPageSize.Point), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
+            self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(QtCore.QSize(self.canvasWidth,self.canvasHeight)), QtGui.QPageLayout.Portrait, QtCore.QMarginsF()))
     
     def __doneprinting(self):
         self.imgName = self.pdfName.replace(".pdf",".png")
@@ -105,6 +99,8 @@ class pyWordArt:
         myhtml = myhtml + "<script src=\"file://"+srcfolder+"/css3wordart/js/wordart.js\"></script>"
         myhtml = myhtml + "</head>"
         myhtml = myhtml + "<body>"
+        myhtml = myhtml + "<input type=\"hidden\" id=\"canvasWidth\" name=\"canvasWidth\" value=\""+ str(self.canvasWidth)+"\">"
+        myhtml = myhtml + "<input type=\"hidden\" id=\"canvasHeight\" name=\"canvasHeight\" value=\""+str(self.canvasHeight)+"\">"
         myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-style\" name=\"wordart-style\" value=\""+wordartStyle+"\">"
         myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-size\" name=\"wordart-size\" value=\""+wordartSize+"\">"
         myhtml = myhtml + "<section class=\"background\">"
@@ -125,11 +121,12 @@ class pyWordArt:
         self.page.setHtml(myhtml)
         
         if self.render3D:
-            #self.view = QtWebEngineWidgets.QWebEngineView()
-            #self.view.setFixedSize(3508,2480)
             self.view.setPage(self.page)
+            self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
+            self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
+            self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+            self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
             self.view.show()
-            
 
         self.app.exec_()
         
@@ -178,13 +175,15 @@ class pyWordArt:
 
 if __name__ == "__main__":
     w = pyWordArt()
-    #fileName = os.path.abspath(os.path.dirname(sys.argv[0]))+"/temp"
-    #w.WordArt("Text here", w.Styles["rainbow"], "100", fileName)
     tmpdirname = ""
     with tempfile.TemporaryDirectory() as dirname:
         tmpdirname = dirname
     os.mkdir(tmpdirname)
     print(tmpdirname)
-    w.render3D = True
+    w.canvasWidth = 1754
+    w.canvasHeight = 1240
+    #w.render3D = True
     #w.transparentBackground = True
     w.demo(tmpdirname, "100")
+    #fileName = os.path.abspath(os.path.dirname(sys.argv[0]))+"/temp"
+    #w.WordArt("Text here", w.Styles["rainbow"], "100", fileName)

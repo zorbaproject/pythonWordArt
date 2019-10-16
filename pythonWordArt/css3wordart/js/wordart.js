@@ -218,8 +218,14 @@
         this.startTimer();*/
         var self = this;
         this.bcr = this.el.getBoundingClientRect();
-        document.body.style.width = '3508px'
-        document.body.style.height= '2480px'
+        try {
+        document.body.style.width = document.getElementById("canvasWidth").value+'px';
+        document.body.style.height= document.getElementById("canvasHeight").value+'px';
+        }
+        catch(err) {
+        document.body.style.width = '3508px';
+        document.body.style.height= '2480px';
+        }
         this.position.left = (this.bcr.width/2);
         this.position.top = (this.bcr.height/2);
         //if (this.wstyle == 20) this.position.left = 15;
