@@ -1,0 +1,5 @@
+include pythonWordArt/css3wordart/*
+include pythonWordArt/css3wordart/css/*
+include pythonWordArt/css3wordart/css/fonts/*
+include pythonWordArt/css3wordart/js/*
+include README.md

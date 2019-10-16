@@ -1,15 +1,21 @@
 from distutils.core import setup
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+myversion = '0.2'
 setup(
   name = 'pythonWordArt',      
   packages = ['pythonWordArt'],   
-  version = '0.1',     
+  version = myversion,     
   license='gpl-3.0',     
-  description = 'Make WordArt, like the ones in MS Office, using Python3',  
+  description = 'Make WordArt, like the ones in MS Office, using Python3', 
+  long_description=long_description,
+  long_description_content_type="text/markdown",
   author = 'Luca Tringali',                  
   author_email = 'TRINGALINVENT@libero.it',    
   url = 'https://github.com/zorbaproject/pythonWordArt',   
-  download_url = 'https://github.com/zorbaproject/pythonWordArt/archive/v0.1.tar.gz',    
-  keywords = ['wordart', 'html2png', 'office'],   
+  download_url = 'https://github.com/zorbaproject/pythonWordArt/archive/v'+myversion+'.tar.gz',    
+  keywords = ['wordart', 'html2png', 'office'],  
+  include_package_data=True,
   install_requires=[            
           'PySide2',
           'python-poppler-qt5',
@@ -24,4 +30,3 @@ setup(
     'Programming Language :: Python :: 3.7',
   ],
 )
-# python3 setup.py sdist
