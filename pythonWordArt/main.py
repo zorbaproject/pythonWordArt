@@ -30,8 +30,11 @@ class pyWordArt:
         
         self.Styles = {'outline' : '0', 'up' : '1', 'arc' : '2', 'squeeze' : '3', 'inverted-arc' : '4', 'basic-stack' : '5', 'italic-outline' : '6', 'slate' : '7', 'mauve' : '8', 'graydient' : '9', 'red-blue' : '10', 'brown-stack' : '11', 'radial' : '12', 'purple' : '13', 'green-marble' : '14', 'rainbow' : '15', 'aqua' : '16','texture-stack' : '17', 'paper-bag' : '18', 'sunset' : '19', 'tilt' : '20', 'blues' : '21', 'yellow-dash' : '22', 'green-stack' : '23', 'chrome' : '24', 'marble-slab' : '25', 'gray-block' : '26', 'superhero' : '27', 'horizon' : '28', 'stack-3d' : '29'}
         
-        self.showWindow = False
-        #self.showWindow = True
+        self.render3D = False
+        self.transparentBackground = False
+        
+        self.canvasWidth = 3508
+        self.canvasHeight = 2480
         
         arglist = [sys.argv[0], "--disable-web-security"]
         self.app = QApplication(arglist)
@@ -44,19 +47,36 @@ class pyWordArt:
         self.page = QtWebEngineWidgets.QWebEnginePage(self.profile)
         self.page.loadFinished.connect(self.__printpdf)
         
+        self.view = QtWebEngineWidgets.QWebEngineView()
+        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        
     #def __del__(self):
         #self.app.exit()
 
     def __printpdf(self):
-        self.page.pdfPrintingFinished.connect(self.__doneprinting)
-        self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(QtGui.QPageSize.A4), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
-        # TODO: check why QWebEnginePage contentSize is not correct
-        #self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(self.page.contentsSize().toSize(),QtGui.QPageSize.Point), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
+        if self.render3D:
+            #myi = QtGui.QImage()
+            #myp = QtGui.QPainter(myi)
+            #self.view.render(myp, QtCore.QPoint(0,0))
+            pixmap = self.view.grab()
+            self.imgName = self.pdfName.replace(".pdf",".png")
+            #pixmap.save(self.imgName)
+            image = self.cropImage(pixmap.toImage(), self.transparentBackground)
+            image.save(self.imgName)
+            while not os.path.isfile(self.imgName):
+                time.sleep(0.1)
+            self.view.hide()
+            self.app.exit()
+        else:
+            self.page.pdfPrintingFinished.connect(self.__doneprinting)
+            self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(QtGui.QPageSize.A4), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
+            # TODO: check why QWebEnginePage contentSize is not correct
+            #self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(self.page.contentsSize().toSize(),QtGui.QPageSize.Point), QtGui.QPageLayout.Landscape, QtCore.QMarginsF()))
     
     def __doneprinting(self):
         self.imgName = self.pdfName.replace(".pdf",".png")
         while not bool(os.path.isfile(self.pdfName) or os.path.isfile(self.imgName)):
-            time.sleep(1)
+            time.sleep(0.1)
         try:
             if os.path.isfile(self.pdfName):
                 d = popplerqt5.Poppler.Document.load(self.pdfName)
@@ -64,33 +84,11 @@ class pyWordArt:
         except:
             self.app.exit()
             return
-        zoom = 150/72
-        if True:
-            height = -1
-            width = -1
-            xmargin = 0
-            ymargin = 0
-            for elem in pdfPage.textList():
-                tw = elem.boundingBox().x() + elem.boundingBox().width()
-                th = elem.boundingBox().y() + elem.boundingBox().height()
-                xmargin = xmargin + elem.boundingBox().width()
-                #ymargin = ymargin + elem.boundingBox().height()
-                if th > height:
-                    height = th
-                if tw > width:
-                    width = tw
-            try:
-                xmargin = (xmargin/(len(pdfPage.textList())))/2
-                ymargin = (ymargin/(len(pdfPage.textList())))/2
-            except:
-                xmargin = 0
-                ymargin = 0
-            image = pdfPage.renderToImage(72*zoom, 72*zoom, -1, -1, (width+xmargin)*zoom, (height+ymargin)*zoom)
-        else:
-            image = pdfPage.renderToImage(150, 150, -1, -1, -1, -1)
+        image = pdfPage.renderToImage(150, 150, -1, -1, -1, -1)
+        image = self.cropImage(image, self.transparentBackground)
         image.save(self.imgName)
         while not os.path.isfile(self.imgName):
-            time.sleep(1)
+            time.sleep(0.1)
         if os.path.isfile(self.pdfName):
             os.remove(self.pdfName)
         #print(self.imgName)
@@ -126,12 +124,50 @@ class pyWordArt:
         myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
         self.page.setHtml(myhtml)
         
-        if self.showWindow:
-            self.view = QtWebEngineWidgets.QWebEngineView()
+        if self.render3D:
+            #self.view = QtWebEngineWidgets.QWebEngineView()
+            #self.view.setFixedSize(3508,2480)
             self.view.setPage(self.page)
             self.view.show()
+            
 
         self.app.exec_()
+        
+    def cropImage(self, origimage, transparentBackground = False):
+        maxX = 0
+        minX = origimage.width()
+        maxY = 0
+        minY = origimage.height()
+        exclusionColor = QtGui.QColor(255, 255, 255, 255)
+
+        for x in range(origimage.width()):
+            for y in range(origimage.height()):
+                if QtGui.QColor.fromRgb(origimage.pixel(x, y)) != exclusionColor:
+                    if x < minX:
+                        minX = x
+                    if x > maxX:
+                        maxX = x
+                    if y < minY:
+                        minY = y
+                    if y > maxY: 
+                        maxY = y
+
+        if minX > maxX or minY > maxY:
+            myimage = origimage
+        else:
+            myimage = origimage.copy(minX, minY, maxX-minX, maxY-minY)
+            
+        if transparentBackground:
+            newimage = QtGui.QImage(myimage.width(),myimage.height(),QtGui.QImage.Format_ARGB32)
+            for x in range(myimage.width()):
+                for y in range(myimage.height()):
+                    tmpcolor = QtGui.QColor.fromRgb(myimage.pixel(x, y))
+                    if tmpcolor == exclusionColor:
+                        newimage.setPixelColor(x,y,QtGui.QColor(0, 0, 0, 0))
+                    else:
+                        newimage.setPixelColor(x,y,tmpcolor)
+            myimage = newimage
+        return myimage
         
     def demo(self, dirName, wordartSize):
         if not os.path.isdir(dirName):
@@ -149,4 +185,6 @@ if __name__ == "__main__":
         tmpdirname = dirname
     os.mkdir(tmpdirname)
     print(tmpdirname)
+    w.render3D = True
+    #w.transparentBackground = True
     w.demo(tmpdirname, "100")

@@ -218,9 +218,10 @@
         this.startTimer();*/
         var self = this;
         this.bcr = this.el.getBoundingClientRect();
-        this.position.left = 0;//(window.innerWidth/2)-(this.availSize('width')/2);
-        this.position.top = 0;//(window.innerHeight/2)-(this.availSize('height')/2);
-        // TODO: Place correctly the WordArt
+        document.body.style.width = '3508px'
+        document.body.style.height= '2480px'
+        this.position.left = (this.bcr.width/2);
+        this.position.top = (this.bcr.height/2);
         //if (this.wstyle == 20) this.position.left = 15;
         //if (this.wstyle == 15) this.position.left = -10;
         //if (this.wstyle == 29) this.position.top = -145;
