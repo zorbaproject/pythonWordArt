@@ -1,7 +1,8 @@
-from distutils.core import setup
+from setuptools import setup
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
-myversion = '0.2'
+myversion = '0.3'
 setup(
   name = 'pythonWordArt',      
   packages = ['pythonWordArt'],   
