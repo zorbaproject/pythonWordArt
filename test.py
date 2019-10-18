@@ -4,5 +4,6 @@ import os.path
 from pythonWordArt import pyWordArt
 
 w = pyWordArt()
+w.render3D = True
 fileName = os.path.abspath(os.path.dirname(sys.argv[0]))+"/temp"
 w.WordArt("Text here", w.Styles["rainbow"], "100", fileName)

@@ -22,7 +22,7 @@ import tempfile
 from PySide2.QtWidgets import QApplication, QLabel
 from PySide2 import QtCore, QtGui, QtNetwork, QtWebEngineWidgets, QtWidgets
 
-import popplerqt5
+#import popplerqt5
 
 
 class pyWordArt:
@@ -36,7 +36,7 @@ class pyWordArt:
         self.canvasWidth = 1754 #3508
         self.canvasHeight = 1240 #2480
         
-        arglist = [sys.argv[0], "--disable-web-security"]
+        arglist = [sys.argv[0], "--disable-web-security", "-platform", "minimal"]
         self.app = QApplication(arglist)
         
         self.profile = QtWebEngineWidgets.QWebEngineProfile()
@@ -116,7 +116,10 @@ class pyWordArt:
     
     def WordArt(self, wordartText, wordartStyle, wordartSize, filename):
         self.pdfName = filename + ".pdf"
-        
+
+        if not self.render3D:
+            import popplerqt5
+
         myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
         self.page.setHtml(myhtml)
         
