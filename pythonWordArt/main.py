@@ -148,10 +148,13 @@ class pyWordArt:
         return myimage
     
     def X_is_running(self):
-        #thanks to : https://stackoverflow.com/questions/1027894/detect-if-x11-is-available-python, it's much more clean than my original idea
-        p = Popen(["xset", "-q"], stdout=PIPE, stderr=PIPE)
-        p.communicate()
-        return p.returncode == 0
+        try:
+            #thanks to : https://stackoverflow.com/questions/1027894/detect-if-x11-is-available-python, it's much more clean than my original idea
+            p = Popen(["xset", "-q"], stdout=PIPE, stderr=PIPE)
+            p.communicate()
+            return p.returncode == 0
+        except:
+            return False
         
     def demo(self, dirName, wordartSize):
         if not os.path.isdir(dirName):
