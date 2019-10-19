@@ -2,7 +2,7 @@ from setuptools import setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-myversion = '0.3'
+myversion = '0.4'
 setup(
   name = 'pythonWordArt',      
   packages = ['pythonWordArt'],   
@@ -19,7 +19,6 @@ setup(
   include_package_data=True,
   install_requires=[            
           'PySide2',
-          'python-poppler-qt5',
       ],
   classifiers=[
     'Development Status :: 4 - Beta',      # either "3 - Alpha", "4 - Beta" or "5 - Production/Stable"

@@ -10,7 +10,6 @@
 
 #Requirements: 
 #PySide2: https://pypi.org/project/PySide2/
-#Python Poppler Qt5: https://pypi.org/project/python-poppler-qt5/
 
 
 import sys
@@ -18,25 +17,33 @@ import os
 import os.path
 import time
 import tempfile
+from subprocess import Popen, PIPE
 
 from PySide2.QtWidgets import QApplication, QLabel
 from PySide2 import QtCore, QtGui, QtNetwork, QtWebEngineWidgets, QtWidgets
 
-#import popplerqt5
-
 
 class pyWordArt:
-    def __init__(self):
+    def __init__(self, noGUI = False):
         
         self.Styles = {'outline' : '0', 'up' : '1', 'arc' : '2', 'squeeze' : '3', 'inverted-arc' : '4', 'basic-stack' : '5', 'italic-outline' : '6', 'slate' : '7', 'mauve' : '8', 'graydient' : '9', 'red-blue' : '10', 'brown-stack' : '11', 'radial' : '12', 'purple' : '13', 'green-marble' : '14', 'rainbow' : '15', 'aqua' : '16','texture-stack' : '17', 'paper-bag' : '18', 'sunset' : '19', 'tilt' : '20', 'blues' : '21', 'yellow-dash' : '22', 'green-stack' : '23', 'chrome' : '24', 'marble-slab' : '25', 'gray-block' : '26', 'superhero' : '27', 'horizon' : '28', 'stack-3d' : '29'}
         
-        self.render3D = False
+        self.noGUI = noGUI
+        #don't trust user, check
+        if self.noGUI==False and sys.platform != "win32" and sys.platform != "darwin":
+            if not self.X_is_running():
+                self.noGUI = True
+        
         self.transparentBackground = False
         
         self.canvasWidth = 1754 #3508
         self.canvasHeight = 1240 #2480
         
-        arglist = [sys.argv[0], "--disable-web-security", "-platform", "minimal"]
+        arglist = [sys.argv[0], "--disable-web-security"]
+        if self.noGUI:
+            arglist.append("-platform")
+            arglist.append("minimal")
+        
         self.app = QApplication(arglist)
         
         self.profile = QtWebEngineWidgets.QWebEngineProfile()
@@ -50,11 +57,9 @@ class pyWordArt:
         self.view = QtWebEngineWidgets.QWebEngineView()
         self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
         
-    #def __del__(self):
-        #self.app.exit()
 
     def __printpdf(self):
-        if self.render3D:
+        if True:
             pixmap = self.view.grab()
             self.imgName = self.pdfName.replace(".pdf",".png")
             image = self.cropImage(pixmap.toImage(), self.transparentBackground)
@@ -63,31 +68,7 @@ class pyWordArt:
                 time.sleep(0.1)
             self.view.hide()
             self.app.exit()
-        else:
-            self.page.pdfPrintingFinished.connect(self.__doneprinting)
-            self.page.printToPdf(self.pdfName, QtGui.QPageLayout(QtGui.QPageSize(QtCore.QSize(self.canvasWidth,self.canvasHeight)), QtGui.QPageLayout.Portrait, QtCore.QMarginsF()))
     
-    def __doneprinting(self):
-        self.imgName = self.pdfName.replace(".pdf",".png")
-        while not bool(os.path.isfile(self.pdfName) or os.path.isfile(self.imgName)):
-            time.sleep(0.1)
-        try:
-            if os.path.isfile(self.pdfName):
-                d = popplerqt5.Poppler.Document.load(self.pdfName)
-            pdfPage = d.page(0)
-        except:
-            self.app.exit()
-            return
-        image = pdfPage.renderToImage(150, 150, -1, -1, -1, -1)
-        image = self.cropImage(image, self.transparentBackground)
-        image.save(self.imgName)
-        while not os.path.isfile(self.imgName):
-            time.sleep(0.1)
-        if os.path.isfile(self.pdfName):
-            os.remove(self.pdfName)
-        #print(self.imgName)
-        self.app.exit()
-        
     def WordArtHTML(self, wordartText, wordartStyle, wordartSize):
         srcfolder = os.path.abspath(os.path.dirname(__file__))
         myhtml = "<!DOCTYPE html>"
@@ -117,13 +98,10 @@ class pyWordArt:
     def WordArt(self, wordartText, wordartStyle, wordartSize, filename):
         self.pdfName = filename + ".pdf"
 
-        if not self.render3D:
-            import popplerqt5
-
         myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
         self.page.setHtml(myhtml)
         
-        if self.render3D:
+        if True:
             self.view.setPage(self.page)
             self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
             self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
@@ -168,6 +146,12 @@ class pyWordArt:
                         newimage.setPixelColor(x,y,tmpcolor)
             myimage = newimage
         return myimage
+    
+    def X_is_running(self):
+        #thanks to : https://stackoverflow.com/questions/1027894/detect-if-x11-is-available-python, it's much more clean than my original idea
+        p = Popen(["xset", "-q"], stdout=PIPE, stderr=PIPE)
+        p.communicate()
+        return p.returncode == 0
         
     def demo(self, dirName, wordartSize):
         if not os.path.isdir(dirName):
@@ -185,7 +169,6 @@ if __name__ == "__main__":
     print(tmpdirname)
     w.canvasWidth = 1754
     w.canvasHeight = 1240
-    #w.render3D = True
     #w.transparentBackground = True
     w.demo(tmpdirname, "100")
     #fileName = os.path.abspath(os.path.dirname(sys.argv[0]))+"/temp"

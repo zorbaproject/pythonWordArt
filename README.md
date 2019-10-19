@@ -28,6 +28,8 @@ The first argument is the text, the second is the Style (which needs to be choos
 If you specify render3D, the library will attempt to draw the 3D effects. If you don't specify this flag, the rendering will be faster and more reliable, but will not have 3D effects. \
 To try out all the styles, you can run a demo:
 ```
+import tempfile
+import os
 from pythonWordArt import pyWordArt
 w = pyWordArt()
 tmpdirname = ""
