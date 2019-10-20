@@ -46,30 +46,20 @@ class pyWordArt:
         
         self.app = QApplication(arglist)
         
-        #self.profile = QtWebEngineWidgets.QWebEngineProfile()
-        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessRemoteUrls, True)
-        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessFileUrls, True)
-        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.AllowRunningInsecureContent, True)
-        
-        #self.page = QtWebEngineWidgets.QWebEnginePage(self.profile)
-        #self.page.loadFinished.connect(self.__printpdf)
-        
         self.view = QtWebEngineWidgets.QWebEngineView()
         self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
-        self.view.loadFinished.connect(self.__printpdf)
+        self.view.loadFinished.connect(self.__grabimage)
         
 
-    def __printpdf(self):
-        if True:
-            pixmap = self.view.grab()
-            #self.imgName = self.pdfName.replace(".pdf",".png")
-            image = self.cropImage(pixmap.toImage(), self.transparentBackground)
-            image.save(self.imgName)
-            while not os.path.isfile(self.imgName):
-                time.sleep(0.1)
-            time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
-            self.view.hide()
-            self.app.exit()
+    def __grabimage(self):
+        pixmap = self.view.grab()
+        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
+        image.save(self.imgName)
+        while not os.path.isfile(self.imgName):
+            time.sleep(0.1)
+        time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
+        self.view.hide()
+        self.app.exit()
     
     def WordArtHTML(self, wordartText, wordartStyle, wordartSize):
         srcfolder = os.path.abspath(os.path.dirname(__file__))
@@ -98,22 +88,18 @@ class pyWordArt:
         return myhtml
     
     def WordArt(self, wordartText, wordartStyle, wordartSize, filename):
-        #self.pdfName = filename + ".pdf"
         self.imgName = filename
         if not bool(self.imgName.endswith(".png") or self.imgName.endswith(".jpg") or self.imgName.endswith(".jpeg") or self.imgName.endswith(".gif") or self.imgName.endswith(".tif") or self.imgName.endswith(".tiff") or self.imgName.endswith(".bmp")):
             self.imgName = self.imgName + ".png"
 
         myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
-        #self.page.setHtml(myhtml)
         
-        if True:
-            #self.view.setPage(self.page)
-            self.view.setHtml(myhtml)
-            self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
-            self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-            self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-            self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
-            self.view.show()
+        self.view.setHtml(myhtml)
+        self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
+        self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
+        self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
+        self.view.show()
 
         self.app.exec_()
         
@@ -180,5 +166,4 @@ if __name__ == "__main__":
     w.canvasHeight = 1240
     #w.transparentBackground = True
     w.demo(tmpdirname, "100")
-    #fileName = os.path.abspath(os.path.dirname(sys.argv[0]))+"/temp"
-    #w.WordArt("Text here", w.Styles["rainbow"], "100", fileName)
+    #w.WordArt("Text here", w.Styles["rainbow"], "100", "temp.png")
