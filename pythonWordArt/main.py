@@ -46,26 +46,28 @@ class pyWordArt:
         
         self.app = QApplication(arglist)
         
-        self.profile = QtWebEngineWidgets.QWebEngineProfile()
-        self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessRemoteUrls, True)
-        self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessFileUrls, True)
-        self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.AllowRunningInsecureContent, True)
+        #self.profile = QtWebEngineWidgets.QWebEngineProfile()
+        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessRemoteUrls, True)
+        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.LocalContentCanAccessFileUrls, True)
+        #self.profile.settings().setAttribute(QtWebEngineWidgets.QWebEngineSettings.AllowRunningInsecureContent, True)
         
-        self.page = QtWebEngineWidgets.QWebEnginePage(self.profile)
-        self.page.loadFinished.connect(self.__printpdf)
+        #self.page = QtWebEngineWidgets.QWebEnginePage(self.profile)
+        #self.page.loadFinished.connect(self.__printpdf)
         
         self.view = QtWebEngineWidgets.QWebEngineView()
         self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        self.view.loadFinished.connect(self.__printpdf)
         
 
     def __printpdf(self):
         if True:
             pixmap = self.view.grab()
-            self.imgName = self.pdfName.replace(".pdf",".png")
+            #self.imgName = self.pdfName.replace(".pdf",".png")
             image = self.cropImage(pixmap.toImage(), self.transparentBackground)
             image.save(self.imgName)
             while not os.path.isfile(self.imgName):
                 time.sleep(0.1)
+            time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
             self.view.hide()
             self.app.exit()
     
@@ -82,8 +84,8 @@ class pyWordArt:
         myhtml = myhtml + "<body>"
         myhtml = myhtml + "<input type=\"hidden\" id=\"canvasWidth\" name=\"canvasWidth\" value=\""+ str(self.canvasWidth)+"\">"
         myhtml = myhtml + "<input type=\"hidden\" id=\"canvasHeight\" name=\"canvasHeight\" value=\""+str(self.canvasHeight)+"\">"
-        myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-style\" name=\"wordart-style\" value=\""+wordartStyle+"\">"
-        myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-size\" name=\"wordart-size\" value=\""+wordartSize+"\">"
+        myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-style\" name=\"wordart-style\" value=\""+str(wordartStyle)+"\">"
+        myhtml = myhtml + "<input type=\"hidden\" id=\"wordart-size\" name=\"wordart-size\" value=\""+str(wordartSize)+"\">"
         myhtml = myhtml + "<section class=\"background\">"
         myhtml = myhtml + "<template id=\"bgWordart\">"
         myhtml = myhtml + "<div class=\"wordart\">"
@@ -96,13 +98,17 @@ class pyWordArt:
         return myhtml
     
     def WordArt(self, wordartText, wordartStyle, wordartSize, filename):
-        self.pdfName = filename + ".pdf"
+        #self.pdfName = filename + ".pdf"
+        self.imgName = filename
+        if not bool(self.imgName.endswith(".png") or self.imgName.endswith(".jpg") or self.imgName.endswith(".jpeg") or self.imgName.endswith(".gif") or self.imgName.endswith(".tif") or self.imgName.endswith(".tiff") or self.imgName.endswith(".bmp")):
+            self.imgName = self.imgName + ".png"
 
         myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
-        self.page.setHtml(myhtml)
+        #self.page.setHtml(myhtml)
         
         if True:
-            self.view.setPage(self.page)
+            #self.view.setPage(self.page)
+            self.view.setHtml(myhtml)
             self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
             self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
             self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
@@ -161,7 +167,7 @@ class pyWordArt:
             print("Not a folder")
             return
         for elem in self.Styles:
-            self.WordArt("WordArt Test", self.Styles[elem], wordartSize, dirName + "/demo-" + elem)
+            self.WordArt("WordArt Test", self.Styles[elem], wordartSize, dirName + "/demo-" + elem + ".png")
 
 if __name__ == "__main__":
     w = pyWordArt()
