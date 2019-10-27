@@ -18,13 +18,15 @@ import os.path
 import time
 import tempfile
 from subprocess import Popen, PIPE
+import io
+import base64
 
 from PySide2.QtWidgets import QApplication, QLabel
 from PySide2 import QtCore, QtGui, QtNetwork, QtWebEngineWidgets, QtWidgets
 
 
 class pyWordArt:
-    def __init__(self, noGUI = False):
+    def __init__(self, text = "WordArt Test", style = 15,  size = 100, noGUI = False):
         
         self.Styles = {'outline' : '0', 'up' : '1', 'arc' : '2', 'squeeze' : '3', 'inverted-arc' : '4', 'basic-stack' : '5', 'italic-outline' : '6', 'slate' : '7', 'mauve' : '8', 'graydient' : '9', 'red-blue' : '10', 'brown-stack' : '11', 'radial' : '12', 'purple' : '13', 'green-marble' : '14', 'rainbow' : '15', 'aqua' : '16','texture-stack' : '17', 'paper-bag' : '18', 'sunset' : '19', 'tilt' : '20', 'blues' : '21', 'yellow-dash' : '22', 'green-stack' : '23', 'chrome' : '24', 'marble-slab' : '25', 'gray-block' : '26', 'superhero' : '27', 'horizon' : '28', 'stack-3d' : '29'}
         
@@ -46,12 +48,21 @@ class pyWordArt:
         
         self.app = QApplication(arglist)
         
-        self.view = QtWebEngineWidgets.QWebEngineView()
-        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
-        self.view.loadFinished.connect(self.__grabimage)
+        #self.view = QtWebEngineWidgets.QWebEngineView()
+        #self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        #self.view.loadFinished.connect(self.__grabnone)
         
-
+        self.text = text
+        self.size = size
+        self.style = style
+        
+    def WordArt(self, wordartText, wordartStyle, wordartSize):
+        self.text = wordartText
+        self.style = wordartStyle
+        self.size = wordartSize
+        
     def __grabimage(self):
+        self.view.loadFinished.connect(self.__grabnone)
         pixmap = self.view.grab()
         image = self.cropImage(pixmap.toImage(), self.transparentBackground)
         image.save(self.imgName)
@@ -60,8 +71,21 @@ class pyWordArt:
         time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
         self.view.hide()
         self.app.exit()
+        
+    def __grabimageBuffer(self):
+        self.view.loadFinished.connect(self.__grabnone)
+        pixmap = self.view.grab()
+        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
+        image.save(self.buffer, "PNG")
+        time.sleep(0.1) 
+        self.buffer.close()
+        self.view.hide()
+        self.app.exit()
+        
+    def __grabnone(self):
+        self.app.exit()
     
-    def WordArtHTML(self, wordartText, wordartStyle, wordartSize):
+    def toHTML(self, wordartText, wordartStyle, wordartSize):
         srcfolder = os.path.abspath(os.path.dirname(__file__))
         myhtml = "<!DOCTYPE html>"
         myhtml = myhtml + "<html>"
@@ -87,12 +111,16 @@ class pyWordArt:
         myhtml = myhtml + "</html>"
         return myhtml
     
-    def WordArt(self, wordartText, wordartStyle, wordartSize, filename):
+    def toFile(self, filename):
         self.imgName = filename
         if not bool(self.imgName.endswith(".png") or self.imgName.endswith(".jpg") or self.imgName.endswith(".jpeg") or self.imgName.endswith(".gif") or self.imgName.endswith(".tif") or self.imgName.endswith(".tiff") or self.imgName.endswith(".bmp")):
             self.imgName = self.imgName + ".png"
+        
+        self.view = QtWebEngineWidgets.QWebEngineView()
+        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        self.view.loadFinished.connect(self.__grabimage)
 
-        myhtml = self.WordArtHTML(wordartText, wordartStyle, wordartSize)
+        myhtml = self.toHTML(self.text, self.style, self.size)
         
         self.view.setHtml(myhtml)
         self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
@@ -102,6 +130,28 @@ class pyWordArt:
         self.view.show()
 
         self.app.exec_()
+        return self.imgName
+        
+    def toBufferIO(self):
+        self.buffer = QtCore.QBuffer()
+        self.buffer.open(QtCore.QBuffer.ReadWrite)
+        
+        self.view = QtWebEngineWidgets.QWebEngineView()
+        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        self.view.loadFinished.connect(self.__grabimageBuffer)
+
+        myhtml = self.toHTML(self.text, self.style, self.size)
+        
+        self.view.setHtml(myhtml)
+        self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
+        self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
+        self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
+        self.view.show()
+
+        self.app.exec_()
+        b64 = self.buffer.data().toBase64().data() #We should also provide just the base64 image
+        return io.BytesIO(base64.decodebytes(b64))
         
     def cropImage(self, origimage, transparentBackground = False):
         maxX = 0
@@ -153,7 +203,8 @@ class pyWordArt:
             print("Not a folder")
             return
         for elem in self.Styles:
-            self.WordArt("WordArt Test", self.Styles[elem], wordartSize, dirName + "/demo-" + elem + ".png")
+            self.WordArt("WordArt Test", self.Styles[elem], wordartSize)
+            self.toFile(dirName + "/demo-" + elem + ".png")
 
 if __name__ == "__main__":
     w = pyWordArt()

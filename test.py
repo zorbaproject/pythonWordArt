@@ -14,4 +14,12 @@ if len(sys.argv) >2:
     mystyle = sys.argv[2]
 
 w = pyWordArt()
-w.WordArt("Text here", w.Styles[mystyle], "100", fileName)
+w.WordArt("Text here", w.Styles[mystyle], "100")
+w.toFile(fileName)
+
+try:
+    from PIL import Image
+    pil_im = Image.open(w.toBufferIO())
+    pil_im.show()
+except:
+    print("Unable to show image")
