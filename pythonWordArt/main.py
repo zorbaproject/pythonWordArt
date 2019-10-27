@@ -26,64 +26,38 @@ from PySide2 import QtCore, QtGui, QtNetwork, QtWebEngineWidgets, QtWidgets
 
 
 class pyWordArt:
-    def __init__(self, text = "WordArt Test", style = 15,  size = 100, noGUI = False):
+    def __init__(self, text = "WordArt Test", style = 15,  size = 100, noOpenGL = False):
         
-        self.Styles = {'outline' : '0', 'up' : '1', 'arc' : '2', 'squeeze' : '3', 'inverted-arc' : '4', 'basic-stack' : '5', 'italic-outline' : '6', 'slate' : '7', 'mauve' : '8', 'graydient' : '9', 'red-blue' : '10', 'brown-stack' : '11', 'radial' : '12', 'purple' : '13', 'green-marble' : '14', 'rainbow' : '15', 'aqua' : '16','texture-stack' : '17', 'paper-bag' : '18', 'sunset' : '19', 'tilt' : '20', 'blues' : '21', 'yellow-dash' : '22', 'green-stack' : '23', 'chrome' : '24', 'marble-slab' : '25', 'gray-block' : '26', 'superhero' : '27', 'horizon' : '28', 'stack-3d' : '29'}
+        self.Styles = {'outline' : 0, 'up' : 1, 'arc' : 2, 'squeeze' : 3, 'inverted-arc' : 4, 'basic-stack' : 5, 'italic-outline' : 6, 'slate' : 7, 'mauve' : 8, 'graydient' : 9, 'red-blue' : 10, 'brown-stack' : 11, 'radial' : 12, 'purple' : 13, 'green-marble' : 14, 'rainbow' : 15, 'aqua' : 16,'texture-stack' : 17, 'paper-bag' : 18, 'sunset' : 19, 'tilt' : 20, 'blues' : 21, 'yellow-dash' : 22, 'green-stack' : 23, 'chrome' : 24, 'marble-slab' : 25, 'gray-block' : 26, 'superhero' : 27, 'horizon' : 28, 'stack-3d' : 29}
         
-        self.noGUI = noGUI
-        #don't trust user, check
-        if self.noGUI==False and sys.platform != "win32" and sys.platform != "darwin":
+        self.noOpenGL = noOpenGL
+        #better safe than sorry
+        if self.noOpenGL==False and sys.platform != "win32" and sys.platform != "darwin":
             if not self.X_is_running():
-                self.noGUI = True
-        
-        self.transparentBackground = False
-        
-        self.canvasWidth = 1754 #3508
-        self.canvasHeight = 1240 #2480
+                self.noOpenGL = True
         
         arglist = [sys.argv[0], "--disable-web-security"]
-        if self.noGUI:
+        if self.noOpenGL:
             arglist.append("-platform")
             arglist.append("minimal")
         
         self.app = QApplication(arglist)
         
-        #self.view = QtWebEngineWidgets.QWebEngineView()
-        #self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
-        #self.view.loadFinished.connect(self.__grabnone)
-        
+        #Required properties:
         self.text = text
         self.size = size
         self.style = style
+        #Optional properties:
+        self.transparentBackground = False
+        self.canvasWidth = 1754 #3508
+        self.canvasHeight = 1240 #2480
+        
         
     def WordArt(self, wordartText, wordartStyle, wordartSize):
         self.text = wordartText
         self.style = wordartStyle
         self.size = wordartSize
-        
-    def __grabimage(self):
-        self.view.loadFinished.connect(self.__grabnone)
-        pixmap = self.view.grab()
-        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
-        image.save(self.imgName)
-        while not os.path.isfile(self.imgName):
-            time.sleep(0.1)
-        time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
-        self.view.hide()
-        self.app.exit()
-        
-    def __grabimageBuffer(self):
-        self.view.loadFinished.connect(self.__grabnone)
-        pixmap = self.view.grab()
-        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
-        image.save(self.buffer, "PNG")
-        time.sleep(0.1) 
-        self.buffer.close()
-        self.view.hide()
-        self.app.exit()
-        
-    def __grabnone(self):
-        self.app.exit()
+
     
     def toHTML(self, wordartText, wordartStyle, wordartSize):
         srcfolder = os.path.abspath(os.path.dirname(__file__))
@@ -110,49 +84,71 @@ class pyWordArt:
         myhtml = myhtml + "</body>"
         myhtml = myhtml + "</html>"
         return myhtml
+
     
     def toFile(self, filename):
         self.imgName = filename
         if not bool(self.imgName.endswith(".png") or self.imgName.endswith(".jpg") or self.imgName.endswith(".jpeg") or self.imgName.endswith(".gif") or self.imgName.endswith(".tif") or self.imgName.endswith(".tiff") or self.imgName.endswith(".bmp")):
             self.imgName = self.imgName + ".png"
         
-        self.view = QtWebEngineWidgets.QWebEngineView()
-        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
-        self.view.loadFinished.connect(self.__grabimage)
+        self.__render()
 
-        myhtml = self.toHTML(self.text, self.style, self.size)
-        
-        self.view.setHtml(myhtml)
-        self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
-        self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-        self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
-        self.view.show()
-
-        self.app.exec_()
         return self.imgName
+    
+    def toBase64(self):
+        self.__buffer = QtCore.QBuffer()
+        self.__buffer.open(QtCore.QBuffer.ReadWrite)
+        
+        self.__render()
+
+        b64 = self.__buffer.data().toBase64().data()
+        return b64
+    
         
     def toBufferIO(self):
-        self.buffer = QtCore.QBuffer()
-        self.buffer.open(QtCore.QBuffer.ReadWrite)
-        
-        self.view = QtWebEngineWidgets.QWebEngineView()
-        self.view.setFixedSize(self.canvasWidth,self.canvasHeight)
-        self.view.loadFinished.connect(self.__grabimageBuffer)
+        b64 = self.toBase64()
+        return io.BytesIO(base64.decodebytes(b64))
+
+    
+    def __render(self):
+        self.__view = QtWebEngineWidgets.QWebEngineView()
+        self.__view.setFixedSize(self.canvasWidth,self.canvasHeight)
+        self.__view.loadFinished.connect(self.__grabimage)
 
         myhtml = self.toHTML(self.text, self.style, self.size)
         
-        self.view.setHtml(myhtml)
-        self.view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
-        self.view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-        self.view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
-        self.view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
-        self.view.show()
-
-        self.app.exec_()
-        b64 = self.buffer.data().toBase64().data() #We should also provide just the base64 image
-        return io.BytesIO(base64.decodebytes(b64))
+        self.__view.setHtml(myhtml)
+        self.__view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
+        self.__view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
+        self.__view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self.__view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
+        self.__view.show()
         
+        self.app.exec_()
+        
+    
+    def __grabimage(self):
+        pixmap = self.__view.grab()
+        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
+        useBuffer = True
+        try:
+            if not self.__buffer.isOpen():
+                useBuffer = False
+        except:
+            useBuffer = False
+        if useBuffer:
+            image.save(self.__buffer, "PNG")
+            time.sleep(0.1) 
+            self.__buffer.close()
+        else:
+            image.save(self.imgName)
+            while not os.path.isfile(self.imgName):
+                time.sleep(0.1)
+            time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
+        self.__view.hide()
+        self.app.exit()
+    
+    
     def cropImage(self, origimage, transparentBackground = False):
         maxX = 0
         minX = origimage.width()
@@ -189,6 +185,7 @@ class pyWordArt:
             myimage = newimage
         return myimage
     
+    
     def X_is_running(self):
         try:
             #thanks to : https://stackoverflow.com/questions/1027894/detect-if-x11-is-available-python, it's much more clean than my original idea
@@ -197,6 +194,7 @@ class pyWordArt:
             return p.returncode == 0
         except:
             return False
+
         
     def demo(self, dirName, wordartSize):
         if not os.path.isdir(dirName):
@@ -205,6 +203,8 @@ class pyWordArt:
         for elem in self.Styles:
             self.WordArt("WordArt Test", self.Styles[elem], wordartSize)
             self.toFile(dirName + "/demo-" + elem + ".png")
+
+
 
 if __name__ == "__main__":
     w = pyWordArt()
@@ -217,4 +217,3 @@ if __name__ == "__main__":
     w.canvasHeight = 1240
     #w.transparentBackground = True
     w.demo(tmpdirname, "100")
-    #w.WordArt("Text here", w.Styles["rainbow"], "100", "temp.png")
