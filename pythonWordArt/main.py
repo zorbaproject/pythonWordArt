@@ -33,7 +33,7 @@ class pyWordArt:
         self.noOpenGL = noOpenGL
         #better safe than sorry
         if self.noOpenGL==False and sys.platform != "win32" and sys.platform != "darwin":
-            if not self.X_is_running():
+            if not self.__X_is_running():
                 self.noOpenGL = True
         
         arglist = [sys.argv[0], "--disable-web-security"]
@@ -41,7 +41,7 @@ class pyWordArt:
             arglist.append("-platform")
             arglist.append("minimal")
         
-        self.app = QApplication(arglist)
+        self.__app = QApplication(arglist)
         
         #Required properties:
         self.text = text
@@ -124,12 +124,12 @@ class pyWordArt:
         self.__view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
         self.__view.show()
         
-        self.app.exec_()
+        self.__app.exec_()
         
     
     def __grabimage(self):
         pixmap = self.__view.grab()
-        image = self.cropImage(pixmap.toImage(), self.transparentBackground)
+        image = self.__cropImage(pixmap.toImage(), self.transparentBackground)
         useBuffer = True
         try:
             if not self.__buffer.isOpen():
@@ -146,10 +146,10 @@ class pyWordArt:
                 time.sleep(0.1)
             time.sleep(0.1)   #sometimes we need a little bit more just to be sure the file has actually been written
         self.__view.hide()
-        self.app.exit()
+        self.__app.exit()
     
     
-    def cropImage(self, origimage, transparentBackground = False):
+    def __cropImage(self, origimage, transparentBackground = False):
         maxX = 0
         minX = origimage.width()
         maxY = 0
@@ -186,7 +186,7 @@ class pyWordArt:
         return myimage
     
     
-    def X_is_running(self):
+    def __X_is_running(self):
         try:
             #thanks to : https://stackoverflow.com/questions/1027894/detect-if-x11-is-available-python, it's much more clean than my original idea
             p = Popen(["xset", "-q"], stdout=PIPE, stderr=PIPE)
@@ -196,7 +196,7 @@ class pyWordArt:
             return False
 
         
-    def demo(self, dirName, wordartSize):
+    def demo(self, dirName, wordartSize = 100):
         if not os.path.isdir(dirName):
             print("Not a folder")
             return

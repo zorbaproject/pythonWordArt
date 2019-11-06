@@ -31,10 +31,21 @@ This is a minimalistic example:
 ```
 from pythonWordArt import pyWordArt
 w = pyWordArt()
-w.WordArt("Text here", w.Styles["rainbow"], 100, "temp.png")
+w.WordArt("Text here", w.Styles[mystyle], "100")
+w.toFile(fileName)
 ```
-The first argument is the text, the second is the Style (which needs to be choosen from the **Styles** list) and the third is the size of the font used to write the WordArt. The fourth argument is the filename, without extension, for output. \
-If you specify render3D, the library will attempt to draw the 3D effects. If you don't specify this flag, the rendering will be faster and more reliable, but will not have 3D effects. \
+The first argument is the text, the second is the Style (which needs to be choosen from the **Styles** list, but it's a number from 0 to 29) and the third is the size of the font used to write the WordArt. Usually, 100 is a good value. This gives you a pyWordArt object, that you can then write to an image file (usually in PNG) using the **toFile** function. \
+Alternatively, you can get the image as a Base64 coded text, thanks to the **toBase64** function. \
+It's also possibile to obtain an input-output buffer, useful for libraries that need to open buffers like PIL o Telepot. For example, it can be used like this:
+```
+from PIL import Image
+from pythonWordArt import pyWordArt
+w = pyWordArt()
+w.WordArt("Text here", w.Styles[mystyle], "100")
+pil_im = Image.open(w.toBufferIO())
+pil_im.show()
+```
+If you specify the **noOpenGL** as **True**, the library will load with minimal graphic support, without an OpenGL context to render 3D effects. If you don't specify this flag, the rendering will be done with OpenGL if available. \
 To try out all the styles, you can run a demo:
 ```
 import tempfile
@@ -95,6 +106,61 @@ These are all the available styles:
 * stack-3d
 
 You can find all the images in the [examples](https://github.com/zorbaproject/pythonWordArt/tree/master/examples) folder.
+
+## List of members
+Functions:
+
+### init__(self, text = "WordArt Test", style = 15,  size = 100, noOpenGL = False)
+This function initialize the pythonWordArt object. It's possible to call the function with no argoments, and set the basic properties in the next lines of code. Or you can already set the properties here, which is useful if you just want to get one single wordart.
+Does not return a value.
+
+### WordArt(self, wordartText, wordartStyle, wordartSize)
+This function enables you to set new properties for a WordArt. Basically, you can change the text, the style, or the size all in one line. If you prefer, it's also possible to set the properties manually.
+Does not return a value.
+
+### toHTML(self, wordartText, wordartStyle, wordartSize)
+Returns a string containing html code that works locally displaying the WordArt.
+
+### toBase64()
+Returns the wordart image as a printable string text in Base64 encoding.
+
+### toBufferIO()
+Returns an Input Output buffer containing the image. This simulates opening a file withotu actually having to write a file on disk.
+
+### toFile(fileName)
+Saves the image in a file. The name fileName can be with or without extension. If the extension is missing, PNG format will be used automatically.
+Returns full fileName.
+
+### demo(self, dirName, wordartSize = 100)
+This function take a folder path, and eventually the WordArt size, as arguments. It then creates as many wordart files (in PNG format) as the available Styles.
+Does not return a value.
+
+Properties:
+
+### noOpenGL = bool
+By default set to False. If set to True, the WordArt creation will be performed without OpenGL, which means some Styles will not look good but you'll be able to use it even if you are running it headless without a GPU.
+
+### transparentBackground = bool
+By default set to False. If set to True, the WordArt background will become transaprent. If wiriting to a file, please remember to use a format that supports transparency, like PNG.
+
+### canvasWidth = int
+By default set to 1754, an A4 page width at 150dpi. It is the width in pixels of the canvas where the WordArt will be drawn: you need to set it accordingly to the length of the text you are going to write. In the future, it will be adjusted automatically.
+
+### canvasHeight = int
+By default set to 1240, an A4 page height at 150dpi. It is the height in pixels of the canvas where the WordArt will be drawn: you need to set it accordingly to the length of the text you are going to write. In the future, it will be adjusted automatically.
+
+### text = str
+This is the text of the WordArt. Just set whatever you want, but take note that shot texts, less than 3 or 4 words, work best.
+
+### style = int
+This is the style of the WordArt, by default it's 15, which is the rainbow style. Take a look at the styles list.
+
+### size = int
+This is the size of the WordArt, by default it's 100. If you need a bigger image, ust use a bigger number.
+
+### Styles = dict
+This dictionary contains all the styles supported by pythonWordArt. It's easyer to remember the styles by their name nstead of the number.
+
 
 ## HTML
 

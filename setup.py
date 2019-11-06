@@ -2,7 +2,7 @@ from setuptools import setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
-myversion = '0.4'
+myversion = '0.9'
 setup(
   name = 'pythonWordArt',      
   packages = ['pythonWordArt'],   
