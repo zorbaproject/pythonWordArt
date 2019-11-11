@@ -51,6 +51,7 @@ class pyWordArt:
         self.transparentBackground = False
         self.canvasWidth = 1754 #3508
         self.canvasHeight = 1240 #2480
+        self.debug = False
         
         
     def WordArt(self, wordartText, wordartStyle, wordartSize):
@@ -118,9 +119,10 @@ class pyWordArt:
         myhtml = self.toHTML(self.text, self.style, self.size)
         
         self.__view.setHtml(myhtml)
-        self.__view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
-        self.__view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-        self.__view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        if not self.debug:
+            self.__view.setAttribute(QtCore.Qt.WA_DontShowOnScreen, True)
+            self.__view.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
+            self.__view.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
         self.__view.setAttribute(QtCore.Qt.WA_AlwaysStackOnTop, True)
         self.__view.show()
         
@@ -128,6 +130,10 @@ class pyWordArt:
         
     
     def __grabimage(self):
+        if sys.platform == "win32":
+            QApplication.processEvents()
+        if  self.debug:
+            test = input("Press return to continue or Ctrl+C to stop")
         pixmap = self.__view.grab()
         image = self.__cropImage(pixmap.toImage(), self.transparentBackground)
         useBuffer = True

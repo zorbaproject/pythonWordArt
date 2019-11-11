@@ -14,6 +14,7 @@ if len(sys.argv) >2:
     mystyle = sys.argv[2]
 
 w = pyWordArt()
+w.debug = True
 w.WordArt("Text here", w.Styles[mystyle], "100")
 w.toFile(fileName)
 

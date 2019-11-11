@@ -31,17 +31,17 @@ This is a minimalistic example:
 ```
 from pythonWordArt import pyWordArt
 w = pyWordArt()
-w.WordArt("Text here", w.Styles[mystyle], "100")
+w.WordArt("Text here", w.Styles["rainbow"], "100")
 w.toFile(fileName)
 ```
 The first argument is the text, the second is the Style (which needs to be choosen from the **Styles** list, but it's a number from 0 to 29) and the third is the size of the font used to write the WordArt. Usually, 100 is a good value. This gives you a pyWordArt object, that you can then write to an image file (usually in PNG) using the **toFile** function. \
 Alternatively, you can get the image as a Base64 coded text, thanks to the **toBase64** function. \
-It's also possibile to obtain an input-output buffer, useful for libraries that need to open buffers like PIL o Telepot. For example, it can be used like this:
+It's also possibile to obtain an input-output buffer, useful for libraries that need to open buffers like PIL (pip install Pillow) o Telepot (pip install telepot). For example, it can be used like this:
 ```
 from PIL import Image
 from pythonWordArt import pyWordArt
 w = pyWordArt()
-w.WordArt("Text here", w.Styles[mystyle], "100")
+w.WordArt("Text here", w.Styles["rainbow"], "100")
 pil_im = Image.open(w.toBufferIO())
 pil_im.show()
 ```
@@ -161,6 +161,8 @@ This is the size of the WordArt, by default it's 100. If you need a bigger image
 ### Styles = dict
 This dictionary contains all the styles supported by pythonWordArt. It's easyer to remember the styles by their name nstead of the number.
 
+### debug = bool
+By default set to False. If set to True, the rendering window (with a QWebEngineView) will be visible, and you'll need to press return to continue after rendering finished.
 
 ## HTML
 
